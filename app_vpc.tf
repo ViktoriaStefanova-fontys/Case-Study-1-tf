@@ -87,3 +87,83 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "app_tgw_attatchment" {
     Name = "tgw-attach-app"
   }
 }
+
+
+
+
+
+
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id              = aws_vpc.app_vpc.id
+  service_name        = "com.amazonaws.eu-central-1.ssm"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.app_private_subnet_1a.id, aws_subnet.app_private_subnet_1b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id              = aws_vpc.app_vpc.id
+  service_name        = "com.amazonaws.eu-central-1.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.app_private_subnet_1a.id, aws_subnet.app_private_subnet_1b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id              = aws_vpc.app_vpc.id
+  service_name        = "com.amazonaws.eu-central-1.ec2messages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.app_private_subnet_1a.id, aws_subnet.app_private_subnet_1b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
+  private_dns_enabled = true
+}
+
+# Security group for the endpoints - just needs to allow HTTPS from within the VPC
+resource "aws_security_group" "vpc_endpoints_sg" {
+  name        = "vpc-endpoints-sg"
+  description = "Allow HTTPS from VPC for SSM endpoints"
+  vpc_id      = aws_vpc.app_vpc.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "endpoints_https" {
+  security_group_id = aws_security_group.vpc_endpoints_sg.id
+  cidr_ipv4         = var.app_vpc_cidr
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "endpoints_egress" {
+  security_group_id = aws_security_group.vpc_endpoints_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+
+
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.app_vpc.id
+  service_name        = "com.amazonaws.eu-central-1.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.app_private_subnet_1a.id, aws_subnet.app_private_subnet_1b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.app_vpc.id
+  service_name        = "com.amazonaws.eu-central-1.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.app_private_subnet_1a.id, aws_subnet.app_private_subnet_1b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.app_vpc.id
+  service_name      = "com.amazonaws.eu-central-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.app_private_subnet_rt.id]
+}

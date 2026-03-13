@@ -111,6 +111,17 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_access" {
 }
 
 # Read secrets from Secret Manager
+data "aws_secretsmanager_secret" "github_pat_viki" {
+  name = "github_pat_viki"
+}
+
+data "aws_secretsmanager_secret" "db_password" {
+  name = "db_password"
+}
+
+data "aws_secretsmanager_secret_version" "db_password" {
+  secret_id = data.aws_secretsmanager_secret.db_password.id
+}
 resource "aws_iam_policy" "web_read_secrets" {
   name = "secrets-read"
 
@@ -120,9 +131,9 @@ resource "aws_iam_policy" "web_read_secrets" {
       Effect = "Allow"
       Action = "secretsmanager:GetSecretValue"
       Resource = [
-        aws_secretsmanager_secret.db_password.arn,
-        aws_secretsmanager_secret.github_pat.arn
-        ]
+        data.aws_secretsmanager_secret.db_password.arn,
+        data.aws_secretsmanager_secret.github_pat_viki.arn
+      ]
     }]
   })
 }
@@ -132,6 +143,25 @@ resource "aws_iam_role_policy_attachment" "web_read_secrets" {
   policy_arn = aws_iam_policy.web_read_secrets.arn
 
 }
+
+resource "aws_iam_policy" "asg_refresh" {
+  name = "asg-instance-refresh"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "autoscaling:StartInstanceRefresh"
+      Resource = "arn:aws:autoscaling:eu-central-1:145887419711:autoScalingGroup:*:autoScalingGroupName/web-asg"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "asg_refresh" {
+  role       = aws_iam_role.web_server_role.name
+  policy_arn = aws_iam_policy.asg_refresh.arn
+}
+
 
 ##### INSTANCE ROLE
 resource "aws_iam_instance_profile" "web_server_profile" {
