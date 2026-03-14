@@ -1,6 +1,6 @@
 resource "aws_launch_template" "web_server_lt" {
   name_prefix   = "web-lt-"
-  image_id      = data.aws_ami.amazon_linux.id
+  image_id      = data.aws_ami.ubuntu_web.id
   instance_type = "t3.micro"
 
   vpc_security_group_ids = [aws_security_group.web_server_security_group.id]
@@ -10,22 +10,21 @@ resource "aws_launch_template" "web_server_lt" {
   }
 
   user_data = base64encode(templatefile("${path.module}/scripts/web_server_userdata.sh", {
-    region      = "eu-central-1"
-    account_id  = "145887419711"
-    repo        = "caste-study-1/web-server"
-    db_host     = aws_db_instance.postgres.address
-    db_user     = "postgres"
-    db_name     = "notesdb"
-    db_port     = "5432"
-    github_repo = "ViktoriaStefanova-fontys/Case-Study-1-web-pipeline"
+    region     = "eu-central-1"
+    account_id = "145887419711"
+    repo       = "caste-study-1/web-server"
+    db_host    = aws_db_instance.postgres.address
+    db_user    = "postgres"
+    db_name    = "notesdb"
+    db_port    = "5432"
   }))
 }
 
 resource "aws_autoscaling_group" "web_asg" {
   name             = "web-asg"
-  desired_capacity = 2
+  desired_capacity = 3
   min_size         = 2
-  max_size         = 2
+  max_size         = 3
   vpc_zone_identifier = [
     aws_subnet.app_private_subnet_1a.id,
     aws_subnet.app_private_subnet_1b.id

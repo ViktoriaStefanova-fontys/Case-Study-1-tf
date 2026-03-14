@@ -1,21 +1,24 @@
 # Resources:
+# aws_ami (ubuntu 24.04)
 # aws_security_group
 # aws_vpc_security_group_ingress_rule
 # aws_vpc_security_group_egress_rule
 # aws_iam_role
 # aws_iam_role_policy_attachment
-# aws_iam_role_policy_attachment
-# aws_iam_role_policy_attachment
 # aws_iam_instance_profile
-# aws_security_group
-# aws_instance
-data "aws_ami" "amazon_linux" {
+
+data "aws_ami" "ubuntu_web" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 
   filter {
@@ -23,17 +26,6 @@ data "aws_ami" "amazon_linux" {
     values = ["hvm"]
   }
 }
-
-
-# data "aws_iam_role" "ec2_role" { #*** make ur own role with tf, this uses the manual one
-#   name = "EC2_instance_role"
-# }
-
-# data "aws_iam_instance_profile" "ec2_profile" {
-#   name = "EC2_instance_role"
-# }
-
-
 
 
 resource "aws_security_group" "web_server_security_group" {
@@ -60,6 +52,14 @@ resource "aws_vpc_security_group_ingress_rule" "web_server_node_exporter_from_mo
   to_port           = 9100
 }
 
+resource "aws_vpc_security_group_ingress_rule" "web_server_cadvisor_from_monitoring" {
+  security_group_id = aws_security_group.web_server_security_group.id
+  cidr_ipv4         = var.hub_vpc_cidr
+  ip_protocol       = "tcp"
+  from_port         = 8080
+  to_port           = 8080
+}
+
 resource "aws_vpc_security_group_egress_rule" "web_allow_all_traffic_ipv4" {
   security_group_id = aws_security_group.web_server_security_group.id
 
@@ -71,9 +71,7 @@ resource "aws_vpc_security_group_egress_rule" "web_allow_all_traffic_ipv4" {
 resource "aws_iam_role" "web_server_role" {
   name = "web_server_role"
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  assume_role_policy = jsonencode({ # give trust policy to it(who can have the role-> ec2)
+  assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -91,36 +89,26 @@ resource "aws_iam_role" "web_server_role" {
   }
 }
 
-##### I AM ROLE POLICIES ATTACHMENTS
+##### IAM ROLE POLICIES ATTACHMENTS
 # ECR read permissions
 resource "aws_iam_role_policy_attachment" "ecr_access" {
-
-  role = aws_iam_role.web_server_role.name
-
+  role       = aws_iam_role.web_server_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
 # Attach SSM permissions so you can connect via Systems Manager
 resource "aws_iam_role_policy_attachment" "ssm_access" {
-
-  role = aws_iam_role.web_server_role.name
-
+  role       = aws_iam_role.web_server_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 # Attach CloudWatch logging permissions
 resource "aws_iam_role_policy_attachment" "cloudwatch_access" {
-
-  role = aws_iam_role.web_server_role.name
-
+  role       = aws_iam_role.web_server_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-# Read secrets from Secret Manager
-data "aws_secretsmanager_secret" "github_pat_viki" {
-  name = "github_pat_viki"
-}
-
+# Read secrets from Secrets Manager (db_password only - github_pat moved to runner)
 data "aws_secretsmanager_secret" "db_password" {
   name = "db_password"
 }
@@ -128,6 +116,7 @@ data "aws_secretsmanager_secret" "db_password" {
 data "aws_secretsmanager_secret_version" "db_password" {
   secret_id = data.aws_secretsmanager_secret.db_password.id
 }
+
 resource "aws_iam_policy" "web_read_secrets" {
   name = "secrets-read"
 
@@ -137,8 +126,7 @@ resource "aws_iam_policy" "web_read_secrets" {
       Effect = "Allow"
       Action = "secretsmanager:GetSecretValue"
       Resource = [
-        data.aws_secretsmanager_secret.db_password.arn,
-        data.aws_secretsmanager_secret.github_pat_viki.arn
+        data.aws_secretsmanager_secret.db_password.arn
       ]
     }]
   })
@@ -147,59 +135,13 @@ resource "aws_iam_policy" "web_read_secrets" {
 resource "aws_iam_role_policy_attachment" "web_read_secrets" {
   role       = aws_iam_role.web_server_role.name
   policy_arn = aws_iam_policy.web_read_secrets.arn
-
 }
 
-resource "aws_iam_policy" "asg_refresh" {
-  name = "asg-instance-refresh"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "autoscaling:StartInstanceRefresh"
-      Resource = "arn:aws:autoscaling:eu-central-1:145887419711:autoScalingGroup:*:autoScalingGroupName/web-asg"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "asg_refresh" {
-  role       = aws_iam_role.web_server_role.name
-  policy_arn = aws_iam_policy.asg_refresh.arn
-}
-
-
-##### INSTANCE ROLE
+##### INSTANCE PROFILE
 resource "aws_iam_instance_profile" "web_server_profile" {
   name = "web_server_profile"
   role = aws_iam_role.web_server_role.name
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # resource "aws_security_group" "test_sg_app" { #*** remove in the end

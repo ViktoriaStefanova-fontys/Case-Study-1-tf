@@ -1,14 +1,24 @@
 #!/bin/bash
 set -euxo pipefail
 
+exec > >(tee /var/log/web-server-userdata.log | logger -t user-data -s 2>/dev/console) 2>&1
+
 REGION="${region}"
 ACCOUNT_ID="${account_id}"
 REPO="${repo}"
 REGISTRY="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
-GITHUB_REPO="${github_repo}"
+
+export DEBIAN_FRONTEND=noninteractive
 
 # ── 1. Install Docker, jq, curl and dependencies ─────────────────────
-dnf install -y docker jq curl tar gzip libicu
+apt-get update -y
+apt-get install -y docker.io jq curl tar gzip unzip
+
+# ── 1b. Install AWS CLI v2 ────────────────────────────────────────────
+curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+unzip -q /tmp/awscliv2.zip -d /tmp
+/tmp/aws/install
+
 systemctl enable docker
 systemctl start docker
 
@@ -37,6 +47,19 @@ docker run -d \
   -e DB_PASSWORD="$DB_PASSWORD" \
   "$REGISTRY/$REPO:latest"
 
+# ── 4b. Run cAdvisor for container metrics ───────────────────────────
+docker run -d \
+  --name cadvisor \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run:/var/run:ro \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lib/docker/:/var/lib/docker:ro \
+  --volume=/dev/disk/:/dev/disk:ro \
+  --privileged \
+  gcr.io/cadvisor/cadvisor:latest
+
 # ── 5. Install node_exporter for Prometheus monitoring ───────────────
 id -u node_exporter >/dev/null 2>&1 || useradd --no-create-home --shell /usr/sbin/nologin node_exporter
 
@@ -64,42 +87,3 @@ EOF
 systemctl daemon-reload
 systemctl enable node_exporter
 systemctl start node_exporter
-
-# ── 6. Install GitHub Actions runner ─────────────────────────────────
-id -u github-runner >/dev/null 2>&1 || useradd -m github-runner
-usermod -aG docker github-runner
-mkdir -p /home/github-runner/actions-runner
-cd /home/github-runner/actions-runner
-
-curl -o actions-runner-linux-x64-2.332.0.tar.gz -L \
-  https://github.com/actions/runner/releases/download/v2.332.0/actions-runner-linux-x64-2.332.0.tar.gz
-
-tar xzf actions-runner-linux-x64-2.332.0.tar.gz
-chown -R github-runner:github-runner /home/github-runner/actions-runner
-
-# ── 7. Fetch GitHub PAT from Secrets Manager ─────────────────────────
-PAT=$(aws secretsmanager get-secret-value \
-  --region "$REGION" \
-  --secret-id github_pat_viki \
-  --query SecretString \
-  --output text)
-
-# ── 8. Exchange PAT for a registration token ─────────────────────────
-REG_TOKEN=$(curl -s -X POST \
-  -H "Authorization: token $PAT" \
-  -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/$GITHUB_REPO/actions/runners/registration-token" \
-  | jq -r '.token')
-
-# ── 9. Register the runner ───────────────────────────────────────────
-sudo -u github-runner ./config.sh \
-  --url "https://github.com/$GITHUB_REPO" \
-  --token "$REG_TOKEN" \
-  --name "ec2-runner-$(hostname)" \
-  --labels self-hosted,ec2 \
-  --unattended \
-  --replace
-
-# ── 10. Install as a systemd service ─────────────────────────────────
-./svc.sh install github-runner
-./svc.sh start

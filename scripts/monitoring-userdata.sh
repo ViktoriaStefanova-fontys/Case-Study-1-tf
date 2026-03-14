@@ -48,6 +48,21 @@ scrape_configs:
         regex: (.*)
         target_label: __address__
         replacement: $1:9100
+        
+  - job_name: 'cadvisor'
+    ec2_sd_configs:
+      - region: eu-central-1
+        port: 8080
+        filters:
+          - name: instance-state-name
+            values: ['running']
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Name]
+        regex: web-server
+        action: keep
+      - source_labels: [__meta_ec2_private_ip]
+        target_label: __address__
+        replacement: $1:8080
 EOF
 
 chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
