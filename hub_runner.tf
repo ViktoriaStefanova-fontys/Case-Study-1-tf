@@ -139,7 +139,7 @@ resource "aws_iam_instance_profile" "runner_profile" {
   role = aws_iam_role.runner_role.name
 }
 
-##### EC2 INSTANCE
+##### EC2 INSTANCE   
 resource "aws_instance" "github_runner" {
   ami                         = data.aws_ami.ubuntu_2404.id
   instance_type               = "t3.small"
@@ -149,8 +149,8 @@ resource "aws_instance" "github_runner" {
   associate_public_ip_address = false
 
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/runner_userdata.sh", {
-    region      = "eu-central-1"
-    github_repo = "ViktoriaStefanova-fontys/Case-Study-1-web-pipeline"
+    region     = "eu-central-1"
+    github_org = "ViktoriaStefanova-fontys"
   }))
 
   root_block_device {

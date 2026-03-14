@@ -4,7 +4,7 @@ set -euxo pipefail
 exec > >(tee /var/log/runner-userdata.log | logger -t user-data -s 2>/dev/console) 2>&1
 
 REGION="${region}"
-GITHUB_REPO="${github_repo}"
+GITHUB_ORG="${github_org}"
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -50,22 +50,24 @@ tar xzf actions-runner-linux-x64-2.332.0.tar.gz
 chown -R github-runner:github-runner /home/github-runner/actions-runner
 
 # ── 7. Fetch GitHub PAT from Secrets Manager ─────────────────────────
+set +x
 PAT=$(aws secretsmanager get-secret-value \
   --region "$REGION" \
   --secret-id github_pat_viki \
   --query SecretString \
   --output text)
 
-# ── 8. Exchange PAT for a registration token ─────────────────────────
+# ── 8. Exchange PAT for an org-level registration token ──────────────
 REG_TOKEN=$(curl -s -X POST \
   -H "Authorization: token $PAT" \
   -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/$GITHUB_REPO/actions/runners/registration-token" \
+  "https://api.github.com/orgs/$GITHUB_ORG/actions/runners/registration-token" \
   | jq -r '.token')
+set -x
 
 # ── 9. Register the runner ────────────────────────────────────────────
 sudo -u github-runner ./config.sh \
-  --url "https://github.com/$GITHUB_REPO" \
+  --url "https://github.com/$GITHUB_ORG" \
   --token "$REG_TOKEN" \
   --name "ec2-runner-$(hostname)" \
   --labels "self-hosted,linux,runner,web,infra" \
