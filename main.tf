@@ -6,7 +6,7 @@ provider "aws" {
 
 terraform {
   required_version = ">= 1.14.5"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -16,13 +16,13 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-state-s3-viktoria"
-    key = "terraform.tfstate"
+    key    = "terraform.tfstate"
     region = "eu-central-1"
     # encrypt = true
     use_lockfile = true
 
     profile = "fontys"
-    
+
   }
 
 }

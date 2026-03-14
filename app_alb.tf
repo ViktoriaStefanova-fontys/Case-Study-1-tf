@@ -73,7 +73,7 @@ resource "aws_lb_listener" "http_listener" {
 
 
 
-resource "aws_security_group" "alb_security_group" {  
+resource "aws_security_group" "alb_security_group" {
   name        = "alb_security_group"
   description = "ALB SG"
   vpc_id      = aws_vpc.app_vpc.id

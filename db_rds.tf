@@ -8,7 +8,7 @@
 # subnet group
 
 resource "aws_db_subnet_group" "rds_subnet_group" {
-  name       = "rds-subnet-group"
+  name = "rds-subnet-group"
   subnet_ids = [
     aws_subnet.db_private_subnet_1a.id,
     aws_subnet.db_private_subnet_1b.id
@@ -46,14 +46,14 @@ resource "aws_vpc_security_group_egress_rule" "rds_egress" {
 
 # RDS instance
 resource "aws_db_instance" "postgres" {
-  identifier        = "web-server-db"
-  engine            = "postgres"
-  engine_version    = "16"
-  instance_class    = "db.t3.micro"
+  identifier     = "web-server-db"
+  engine         = "postgres"
+  engine_version = "16"
+  instance_class = "db.t3.micro"
 
   # Storage
   allocated_storage     = 20
-  max_allocated_storage = 50  
+  max_allocated_storage = 50
   storage_type          = "gp2"
   storage_encrypted     = true
 
@@ -76,8 +76,8 @@ resource "aws_db_instance" "postgres" {
   maintenance_window      = "Mon:04:00-Mon:05:00"
 
   # Protection
-  deletion_protection      = false  # set true in production
-  skip_final_snapshot      = true   # set false in production
+  deletion_protection = false # set true in production
+  skip_final_snapshot = true  # set false in production
 
   tags = {
     Name = "Web Server Database"

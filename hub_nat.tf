@@ -7,36 +7,36 @@
 module "fck_nat_1a" {
   source = "git::https://github.com/ViktoriaStefanova-fontys/terraform-aws-fck-nat.git"
 
-  name      = "hub-fck-nat-1a"
-  vpc_id    = aws_vpc.hub_vpc.id
-  subnet_id = aws_subnet.hub_public_subnet_1a.id
+  name         = "hub-fck-nat-1a"
+  vpc_id       = aws_vpc.hub_vpc.id
+  subnet_id    = aws_subnet.hub_public_subnet_1a.id
   ssh_key_name = "key_pair"
 
   # update_route_tables = true
   route_tables_ids = {
     "hub-private-subnet-rt" = aws_route_table.hub_private_subnet_rt_1a.id
   }
-  use_default_security_group = true
+  use_default_security_group    = true
   additional_security_group_ids = [aws_security_group.hub_nat_from_app.id]
 }
 
- 
+
 # fck-nat in AZ2 (public subnet 1b) updating Hub TGW subnet RT 1b
 module "fck_nat_1b" {
   source = "git::https://github.com/ViktoriaStefanova-fontys/terraform-aws-fck-nat.git"
 
-  name      = "hub-fck-nat-1b"
-  vpc_id    = aws_vpc.hub_vpc.id
-  subnet_id = aws_subnet.hub_public_subnet_1b.id
+  name         = "hub-fck-nat-1b"
+  vpc_id       = aws_vpc.hub_vpc.id
+  subnet_id    = aws_subnet.hub_public_subnet_1b.id
   ssh_key_name = "key_pair"
 
   # update_route_tables = true
   route_tables_ids = {
     "hub-tgw-rt-1b" = aws_route_table.hub_private_subnet_rt_1b.id
   }
-  
-  use_default_security_group    = true 
-  additional_security_group_ids = [aws_security_group.hub_nat_from_app.id] 
+
+  use_default_security_group    = true
+  additional_security_group_ids = [aws_security_group.hub_nat_from_app.id]
 }
 
 ## security groups for nat inst

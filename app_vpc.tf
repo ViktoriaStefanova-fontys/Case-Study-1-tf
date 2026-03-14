@@ -53,9 +53,9 @@ resource "aws_subnet" "app_public_subnet_1b" {
 
 # app vpc private subnets
 resource "aws_subnet" "app_private_subnet_1a" {
-  vpc_id            = aws_vpc.app_vpc.id
-  cidr_block        = var.app_private_subnets_cidr[0]
-  availability_zone = data.aws_availability_zones.available.names[0]
+  vpc_id                  = aws_vpc.app_vpc.id
+  cidr_block              = var.app_private_subnets_cidr[0]
+  availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = false
 
   tags = {
@@ -64,9 +64,9 @@ resource "aws_subnet" "app_private_subnet_1a" {
 }
 
 resource "aws_subnet" "app_private_subnet_1b" {
-  vpc_id            = aws_vpc.app_vpc.id
-  cidr_block        = var.app_private_subnets_cidr[1]
-  availability_zone = data.aws_availability_zones.available.names[1]
+  vpc_id                  = aws_vpc.app_vpc.id
+  cidr_block              = var.app_private_subnets_cidr[1]
+  availability_zone       = data.aws_availability_zones.available.names[1]
   map_public_ip_on_launch = false
 
   tags = {

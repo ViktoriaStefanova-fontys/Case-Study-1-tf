@@ -10,13 +10,13 @@ resource "aws_route_table" "hub_public_subnet_rt" {
   vpc_id = aws_vpc.hub_vpc.id
 
   route {
-    cidr_block = "0.0.0.0/0"  # destination
-    gateway_id = aws_internet_gateway.igw_hub.id  # target
+    cidr_block = "0.0.0.0/0"                     # destination
+    gateway_id = aws_internet_gateway.igw_hub.id # target
   }
 
-    route {
-    cidr_block = var.app_vpc_cidr  # destination
-    transit_gateway_id = aws_ec2_transit_gateway.transit_gateway.id   # target
+  route {
+    cidr_block         = var.app_vpc_cidr                           # destination
+    transit_gateway_id = aws_ec2_transit_gateway.transit_gateway.id # target
   }
 
   tags = {
@@ -77,8 +77,8 @@ resource "aws_route_table" "app_public_subnet_rt" {
   }
 
   route {
-    cidr_block = "0.0.0.0/0"  # destination
-    gateway_id = aws_internet_gateway.igw_app.id  # target  # *** change to nat instance?
+    cidr_block = "0.0.0.0/0"                     # destination
+    gateway_id = aws_internet_gateway.igw_app.id # target 
   }
 
 
@@ -93,18 +93,18 @@ resource "aws_route_table" "app_private_subnet_rt" {
   vpc_id = aws_vpc.app_vpc.id
 
   route {
-    cidr_block         = var.hub_vpc_cidr #destination
+    cidr_block         = var.hub_vpc_cidr                           #destination
     transit_gateway_id = aws_ec2_transit_gateway.transit_gateway.id #target
   }
 
   route {
-    cidr_block = var.db_vpc_cidr  # destination
-    vpc_peering_connection_id = aws_vpc_peering_connection.app_to_db_peering.id  # target
+    cidr_block                = var.db_vpc_cidr                                 # destination
+    vpc_peering_connection_id = aws_vpc_peering_connection.app_to_db_peering.id # target
   }
 
   route {
-    cidr_block         = "0.0.0.0/0"  #destination
-    transit_gateway_id = aws_ec2_transit_gateway.transit_gateway.id  #target
+    cidr_block         = "0.0.0.0/0"                                #destination
+    transit_gateway_id = aws_ec2_transit_gateway.transit_gateway.id #target
   }
 
   tags = {
@@ -117,8 +117,8 @@ resource "aws_route_table" "db_private_subnet_rt" {
   vpc_id = aws_vpc.db_vpc.id
 
   route {
-    cidr_block = var.app_vpc_cidr  # destination
-    vpc_peering_connection_id = aws_vpc_peering_connection.app_to_db_peering.id  # target
+    cidr_block                = var.app_vpc_cidr                                # destination
+    vpc_peering_connection_id = aws_vpc_peering_connection.app_to_db_peering.id # target
   }
 
   tags = {

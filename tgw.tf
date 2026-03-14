@@ -1,8 +1,8 @@
 #creation of tgw
 resource "aws_ec2_transit_gateway" "transit_gateway" {
-  description = "Transit Gateway"
-  default_route_table_association = "disable"  
-  default_route_table_propagation = "disable" 
+  description                     = "Transit Gateway"
+  default_route_table_association = "disable"
+  default_route_table_propagation = "disable"
 }
 # route table
 resource "aws_ec2_transit_gateway_route_table" "transit_gateway_rt" {
