@@ -1,3 +1,4 @@
+.terraform/
 *.tfstate
 *.tfstate.*
 crash.log
@@ -10,9 +11,3 @@ override.tf.json
 .env
 .help/
 grafana_container.txt
-terraform/.terraform/          # provider cache, downloaded by terraform init
-terraform/.terraform.lock.hcl # optional, but often committed actually
-terraform/terraform.tfstate    # never commit state
-terraform/terraform.tfstate.backup
-terraform/tfplan               # binary plan file
-terraform/*.auto.tfvars        # if it has secrets in it
