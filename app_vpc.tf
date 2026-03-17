@@ -88,11 +88,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "app_tgw_attatchment" {
   }
 }
 
-
-
-
-
-
+### SSM Endpoints
 resource "aws_vpc_endpoint" "ssm" {
   vpc_id              = aws_vpc.app_vpc.id
   service_name        = "com.amazonaws.eu-central-1.ssm"
@@ -120,29 +116,16 @@ resource "aws_vpc_endpoint" "ec2messages" {
   private_dns_enabled = true
 }
 
-# Security group for the endpoints - just needs to allow HTTPS from within the VPC
+# Endpoints security group
 resource "aws_security_group" "vpc_endpoints_sg" {
   name        = "vpc-endpoints-sg"
   description = "Allow HTTPS from VPC for SSM endpoints"
   vpc_id      = aws_vpc.app_vpc.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "endpoints_https" {
-  security_group_id = aws_security_group.vpc_endpoints_sg.id
-  cidr_ipv4         = var.app_vpc_cidr
-  ip_protocol       = "tcp"
-  from_port         = 443
-  to_port           = 443
-}
-
-resource "aws_vpc_security_group_egress_rule" "endpoints_egress" {
-  security_group_id = aws_security_group.vpc_endpoints_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1"
-}
 
 
-
+# *** molq te razberi kakvo the fuck e tova
 resource "aws_vpc_endpoint" "ecr_api" {
   vpc_id              = aws_vpc.app_vpc.id
   service_name        = "com.amazonaws.eu-central-1.ecr.api"
@@ -167,3 +150,18 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.app_private_subnet_rt.id]
 }
+
+resource "aws_vpc_security_group_ingress_rule" "endpoints_https" {
+  security_group_id = aws_security_group.vpc_endpoints_sg.id
+  cidr_ipv4         = var.app_vpc_cidr
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "endpoints_egress" {
+  security_group_id = aws_security_group.vpc_endpoints_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+

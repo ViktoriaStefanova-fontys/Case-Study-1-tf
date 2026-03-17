@@ -10,7 +10,6 @@ module "fck_nat_1a" {
   name         = "hub-fck-nat-1a"
   vpc_id       = aws_vpc.hub_vpc.id
   subnet_id    = aws_subnet.hub_public_subnet_1a.id
-  ssh_key_name = "key_pair"
 
   # update_route_tables = true
   route_tables_ids = {
@@ -28,7 +27,6 @@ module "fck_nat_1b" {
   name         = "hub-fck-nat-1b"
   vpc_id       = aws_vpc.hub_vpc.id
   subnet_id    = aws_subnet.hub_public_subnet_1b.id
-  ssh_key_name = "key_pair"
 
   # update_route_tables = true
   route_tables_ids = {

@@ -67,7 +67,7 @@ resource "aws_db_instance" "postgres" {
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   publicly_accessible    = false
 
-  # Multi-AZ — this is what creates your primary + standby
+  # *** change to true at the end for a standby
   multi_az = false
 
   # Backups

@@ -41,7 +41,7 @@ resource "aws_ec2_transit_gateway_route_table_association" "app_assoc" {
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.transit_gateway_rt.id
 }
 
-# #propagations
+# #propagations: removed, because i made routes manually
 # resource "aws_ec2_transit_gateway_route_table_propagation" "hub_prop" {
 #   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.hub_tgw_attatchment.id
 #   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.transit_gateway_rt.id

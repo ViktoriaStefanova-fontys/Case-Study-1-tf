@@ -1,4 +1,4 @@
-resource "aws_launch_template" "web_server_lt" {
+resource "aws_launch_template" "web_server_lt" {    # web server launch template
   name_prefix   = "web-lt-"
   image_id      = data.aws_ami.ubuntu_web.id
   instance_type = "t3.micro"
@@ -9,9 +9,9 @@ resource "aws_launch_template" "web_server_lt" {
     name = aws_iam_instance_profile.web_server_profile.name
   }
 
-  user_data = base64encode(templatefile("${path.module}/scripts/web_server_userdata.sh", {
-    region     = "eu-central-1"
-    account_id = "145887419711"
+  user_data = base64encode(templatefile("${path.module}/scripts/web_server_userdata.sh", { # user data web server
+    region     = var.aws_region
+    account_id = var.account_id
     repo       = "caste-study-1/web-server"
     db_host    = aws_db_instance.postgres.address
     db_user    = "postgres"
@@ -20,9 +20,9 @@ resource "aws_launch_template" "web_server_lt" {
   }))
 }
 
-resource "aws_autoscaling_group" "web_asg" {
+resource "aws_autoscaling_group" "web_asg" {   #autoscaling group
   name             = "web-asg"
-  desired_capacity = 3
+  desired_capacity = 2
   min_size         = 2
   max_size         = 3
   vpc_zone_identifier = [
@@ -30,7 +30,7 @@ resource "aws_autoscaling_group" "web_asg" {
     aws_subnet.app_private_subnet_1b.id
   ]
 
-  target_group_arns = [aws_lb_target_group.web_tg.arn]
+  target_group_arns = [aws_lb_target_group.web_tg.arn]  # *** arn: amazon registered name?
 
   launch_template {
     id      = aws_launch_template.web_server_lt.id
@@ -38,7 +38,7 @@ resource "aws_autoscaling_group" "web_asg" {
   }
 
   health_check_type       = "ELB"
-  default_instance_warmup = 30
+  default_instance_warmup = 15
 
   tag {
     key                 = "Name"

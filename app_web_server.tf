@@ -7,7 +7,7 @@
 # aws_iam_role_policy_attachment
 # aws_iam_instance_profile
 
-data "aws_ami" "ubuntu_web" {
+data "aws_ami" "ubuntu_web" {   #ubuntu ami
   most_recent = true
   owners      = ["099720109477"] # Canonical
 
@@ -34,7 +34,7 @@ resource "aws_security_group" "web_server_security_group" {
   vpc_id      = aws_vpc.app_vpc.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "web_server_from_alb" {
+resource "aws_vpc_security_group_ingress_rule" "web_server_from_alb_http" {
   security_group_id = aws_security_group.web_server_security_group.id
 
   referenced_security_group_id = aws_security_group.alb_security_group.id
@@ -42,6 +42,16 @@ resource "aws_vpc_security_group_ingress_rule" "web_server_from_alb" {
   ip_protocol = "tcp"
   from_port   = 80
   to_port     = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "web_server_from_alb_https" {
+  security_group_id = aws_security_group.web_server_security_group.id
+
+  referenced_security_group_id = aws_security_group.alb_security_group.id
+
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
 }
 
 resource "aws_vpc_security_group_ingress_rule" "web_server_node_exporter_from_monitoring" {
@@ -54,7 +64,7 @@ resource "aws_vpc_security_group_ingress_rule" "web_server_node_exporter_from_mo
 
 resource "aws_vpc_security_group_ingress_rule" "web_server_cadvisor_from_monitoring" {
   security_group_id = aws_security_group.web_server_security_group.id
-  cidr_ipv4         = var.hub_vpc_cidr
+  cidr_ipv4         = var.hub_vpc_cidr   # *** smeni na security groupata na monitoring ili na subneta
   ip_protocol       = "tcp"
   from_port         = 8080
   to_port           = 8080
@@ -96,19 +106,19 @@ resource "aws_iam_role_policy_attachment" "ecr_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-# Attach SSM permissions so you can connect via Systems Manager
+# SSM permissions
 resource "aws_iam_role_policy_attachment" "ssm_access" {
   role       = aws_iam_role.web_server_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# Attach CloudWatch logging permissions
+# CloudWatch
 resource "aws_iam_role_policy_attachment" "cloudwatch_access" {
   role       = aws_iam_role.web_server_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-# Read secrets from Secrets Manager (db_password only - github_pat moved to runner)
+# Read db_password from Secrets Manager 
 data "aws_secretsmanager_secret" "db_password" {
   name = "db_password"
 }
@@ -143,53 +153,3 @@ resource "aws_iam_instance_profile" "web_server_profile" {
   role = aws_iam_role.web_server_role.name
 }
 
-
-# resource "aws_security_group" "test_sg_app" { #*** remove in the end
-#   name        = "web-test-sg"
-#   description = "Connectivity test SG (ICMP + SSH) from allowed CIDR"
-#   vpc_id      = aws_vpc.app_vpc.id
-
-#   ingress {
-#     description = "ICMP (ping) from allowed CIDR"
-#     from_port   = -1
-#     to_port     = -1
-#     protocol    = "icmp"
-#     cidr_blocks = [var.hub_vpc_cidr]
-#   }
-
-#   ingress {
-#     description = "SSH from allowed CIDR"
-#     from_port   = 22
-#     to_port     = 22
-#     protocol    = "tcp"
-#     cidr_blocks = [var.hub_vpc_cidr]
-#   }
-
-#   egress {
-#     description = "Allow all outbound"
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-# }
-
-
-# resource "aws_instance" "test_app" { #*** remove in the end
-#   ami                         = data.aws_ami.amazon_linux.id
-#   instance_type               = var.instance_type
-#   subnet_id                   = aws_subnet.app_private_subnet_1a.id
-#   vpc_security_group_ids      = [aws_security_group.test_sg_app.id]
-#   key_name                    = "web_server"
-#   associate_public_ip_address = false
-
-#   iam_instance_profile = data.aws_iam_instance_profile.ec2_profile.name
-
-#   tags = {
-#     Name = "app test"
-#   }
-# }
-
-
-
-# *** redo security groups with the new recommended syntax by hashicorp

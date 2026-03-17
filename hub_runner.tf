@@ -11,6 +11,43 @@ data "aws_secretsmanager_secret" "github_pat_viki" {
   name = "github_pat_viki"
 }
 
+data "aws_secretsmanager_secret" "github_pat_infra" {
+  name = "github_pat_infra"
+}
+
+##### EC2 INSTANCE   
+resource "aws_instance" "github_runner" {
+  ami                         = data.aws_ami.ubuntu_2404.id
+  instance_type               = "t3.small"
+  subnet_id                   = aws_subnet.hub_private_subnet_1a.id
+  vpc_security_group_ids      = [aws_security_group.runner_sg.id]
+  iam_instance_profile        = aws_iam_instance_profile.runner_profile.name
+  associate_public_ip_address = false
+
+  user_data_base64 = base64encode(templatefile("${path.module}/scripts/runner_userdata.sh", {   # *** opitai se da smenish repotata i regiona s variables
+    region           = "eu-central-1"
+    github_repo_web  = "ViktoriaStefanova-fontys/Case-Study-1-web-pipeline"
+    github_repo_infra = "ViktoriaStefanova-fontys/Case-Study-1-tf"
+  }))
+
+  root_block_device {
+    volume_size = 30
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = "github-runner"
+    Role = "runner"
+  }
+}
+
+##### INSTANCE PROFILE
+resource "aws_iam_instance_profile" "runner_profile" {
+  name = "runner_profile"
+  role = aws_iam_role.runner_role.name
+}
+
+# Hub Monitoring security group
 resource "aws_security_group" "runner_sg" {
   name        = "runner_sg"
   description = "GitHub Actions runner SG"
@@ -67,25 +104,26 @@ resource "aws_iam_role_policy_attachment" "runner_cloudwatch" {
 
 resource "aws_iam_policy" "runner_read_secrets" {
   name = "runner-read-secrets"
-
+ 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
       Action = "secretsmanager:GetSecretValue"
       Resource = [
-        data.aws_secretsmanager_secret.github_pat_viki.arn
+        data.aws_secretsmanager_secret.github_pat_viki.arn,
+        data.aws_secretsmanager_secret.github_pat_infra.arn
       ]
     }]
   })
 }
-
+ 
 resource "aws_iam_role_policy_attachment" "runner_read_secrets" {
   role       = aws_iam_role.runner_role.name
   policy_arn = aws_iam_policy.runner_read_secrets.arn
 }
 
-# Allow runner to trigger ASG instance refresh (needed for web pipeline)
+# Allow runner to trigger ASG instance refresh
 resource "aws_iam_policy" "runner_asg_refresh" {
   name = "runner-asg-instance-refresh"
 
@@ -133,33 +171,5 @@ resource "aws_iam_role_policy_attachment" "runner_terraform_state" {
   policy_arn = aws_iam_policy.runner_terraform_state.arn
 }
 
-##### INSTANCE PROFILE
-resource "aws_iam_instance_profile" "runner_profile" {
-  name = "runner_profile"
-  role = aws_iam_role.runner_role.name
-}
 
-##### EC2 INSTANCE   
-resource "aws_instance" "github_runner" {
-  ami                         = data.aws_ami.ubuntu_2404.id
-  instance_type               = "t3.small"
-  subnet_id                   = aws_subnet.hub_private_subnet_1a.id
-  vpc_security_group_ids      = [aws_security_group.runner_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.runner_profile.name
-  associate_public_ip_address = false
-
-  user_data_base64 = base64encode(templatefile("${path.module}/scripts/runner_userdata.sh", {
-    region     = "eu-central-1"
-    github_org = "ViktoriaStefanova-fontys"
-  }))
-
-  root_block_device {
-    volume_size = 30
-    volume_type = "gp3"
-  }
-
-  tags = {
-    Name = "github-runner"
-    Role = "runner"
-  }
-}
+# *** da si napishesh nqkyde vryzkata mejdu policy, polict attachment, roles i instance profiles i sled tova da razmestish resursite tuka da sa podredeni
