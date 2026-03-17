@@ -30,9 +30,6 @@ jobs:
           role-to-assume: arn:aws:iam::145887419711:role/github-web-server
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Terraform fmt
-        run: terraform fmt -check -recursive
-
       - name: Terraform init
         run: |
           terraform init \

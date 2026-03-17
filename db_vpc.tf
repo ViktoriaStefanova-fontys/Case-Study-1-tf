@@ -15,7 +15,7 @@ resource "aws_vpc" "db_vpc" {
   }
 }
 
-#db private subnets
+#db private subnets 
 resource "aws_subnet" "db_private_subnet_1a" {
   vpc_id            = aws_vpc.db_vpc.id
   cidr_block        = var.db_private_subnets_cidr[0]
