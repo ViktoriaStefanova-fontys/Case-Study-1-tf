@@ -30,6 +30,13 @@ jobs:
           role-to-assume: arn:aws:iam::145887419711:role/github-web-server
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+
       - name: Terraform validate
         run: terraform validate
 
