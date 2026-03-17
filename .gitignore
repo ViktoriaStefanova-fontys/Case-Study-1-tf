@@ -10,4 +10,5 @@ override.tf.json
 *_override.tf.json
 .env
 .help/
-grafana_container.txt
+grafana_container.
+terraform.yml

@@ -35,16 +35,16 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 systemctl enable docker
 systemctl start docker
 
-# ── 4. Install Terraform ──────────────────────────────────────────────
-wget -O- https://apt.releases.hashicorp.com/gpg | \
-  gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+# # ── 4. Install Terraform ──────────────────────────────────────────────
+# wget -O- https://apt.releases.hashicorp.com/gpg | \
+#   gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
 
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
-  https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
-  > /etc/apt/sources.list.d/hashicorp.list
+# echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+#   https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+#   > /etc/apt/sources.list.d/hashicorp.list
 
-apt-get update -y
-apt-get install -y terraform
+# apt-get update -y
+# apt-get install -y terraform
 
 # ── 5. Create runner user ─────────────────────────────────────────────
 id -u github-runner >/dev/null 2>&1 || useradd -m github-runner
@@ -93,30 +93,30 @@ sudo -u github-runner ./config.sh \
 ./svc.sh install github-runner
 ./svc.sh start
 
-# ── 8. Set up runner for infra pipeline ──────────────────────────────
-mkdir -p /home/github-runner/runner-infra
-cd /home/github-runner/runner-infra
+# # ── 8. Set up runner for infra pipeline ──────────────────────────────
+# mkdir -p /home/github-runner/runner-infra
+# cd /home/github-runner/runner-infra
 
-curl -o actions-runner-linux-x64-2.332.0.tar.gz -L \
-  https://github.com/actions/runner/releases/download/v2.332.0/actions-runner-linux-x64-2.332.0.tar.gz
-tar xzf actions-runner-linux-x64-2.332.0.tar.gz
-chown -R github-runner:github-runner /home/github-runner/runner-infra
+# curl -o actions-runner-linux-x64-2.332.0.tar.gz -L \
+#   https://github.com/actions/runner/releases/download/v2.332.0/actions-runner-linux-x64-2.332.0.tar.gz
+# tar xzf actions-runner-linux-x64-2.332.0.tar.gz
+# chown -R github-runner:github-runner /home/github-runner/runner-infra
 
-set +x
-REG_TOKEN_INFRA=$(curl -s -X POST \
-  -H "Authorization: token $PAT_INFRA" \
-  -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/$GITHUB_REPO_INFRA/actions/runners/registration-token" \
-  | jq -r '.token')
-set -x
+# set +x
+# REG_TOKEN_INFRA=$(curl -s -X POST \
+#   -H "Authorization: token $PAT_INFRA" \
+#   -H "Accept: application/vnd.github+json" \
+#   "https://api.github.com/repos/$GITHUB_REPO_INFRA/actions/runners/registration-token" \
+#   | jq -r '.token')
+# set -x
 
-sudo -u github-runner ./config.sh \
-  --url "https://github.com/$GITHUB_REPO_INFRA" \
-  --token "$REG_TOKEN_INFRA" \
-  --name "ec2-runner-infra-$(hostname)" \
-  --labels "self-hosted,linux,runner,infra" \
-  --unattended \
-  --replace
+# sudo -u github-runner ./config.sh \
+#   --url "https://github.com/$GITHUB_REPO_INFRA" \
+#   --token "$REG_TOKEN_INFRA" \
+#   --name "ec2-runner-infra-$(hostname)" \
+#   --labels "self-hosted,linux,runner,infra" \
+#   --unattended \
+#   --replace
 
-./svc.sh install github-runner
-./svc.sh start
+# ./svc.sh install github-runner
+# ./svc.sh start
