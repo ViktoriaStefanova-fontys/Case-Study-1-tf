@@ -11,9 +11,9 @@ data "aws_secretsmanager_secret" "github_pat_viki" {
   name = "github_pat_viki"
 }
 
-data "aws_secretsmanager_secret" "github_pat_infra" {
-  name = "github_pat_infra"
-}
+# data "aws_secretsmanager_secret" "github_pat_infra" {
+#   name = "github_pat_infra"
+# }
 
 ##### EC2 INSTANCE   
 resource "aws_instance" "github_runner" {
@@ -27,7 +27,7 @@ resource "aws_instance" "github_runner" {
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/runner_userdata.sh", {   # *** opitai se da smenish repotata i regiona s variables
     region           = "eu-central-1"
     github_repo_web  = "ViktoriaStefanova-fontys/Case-Study-1-web-pipeline"
-    github_repo_infra = "ViktoriaStefanova-fontys/Case-Study-1-tf"
+    # github_repo_infra = "ViktoriaStefanova-fontys/Case-Study-1-tf"
   }))
 
   root_block_device {
@@ -112,7 +112,7 @@ resource "aws_iam_policy" "runner_read_secrets" {
       Action = "secretsmanager:GetSecretValue"
       Resource = [
         data.aws_secretsmanager_secret.github_pat_viki.arn,
-        data.aws_secretsmanager_secret.github_pat_infra.arn
+        # data.aws_secretsmanager_secret.github_pat_infra.arn
       ]
     }]
   })
@@ -142,34 +142,34 @@ resource "aws_iam_role_policy_attachment" "runner_asg_refresh" {
   policy_arn = aws_iam_policy.runner_asg_refresh.arn
 }
 
-# Allow runner to manage Terraform state in S3 (needed for infra pipeline)
-resource "aws_iam_policy" "runner_terraform_state" {
-  name = "runner-terraform-state"
+# # Allow runner to manage Terraform state in S3 (needed for infra pipeline)
+# resource "aws_iam_policy" "runner_terraform_state" {
+#   name = "runner-terraform-state"
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::terraform-state-s3-viktoria",
-          "arn:aws:s3:::terraform-state-s3-viktoria/*"
-        ]
-      }
-    ]
-  })
-}
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "s3:GetObject",
+#           "s3:PutObject",
+#           "s3:DeleteObject",
+#           "s3:ListBucket"
+#         ]
+#         Resource = [
+#           "arn:aws:s3:::terraform-state-s3-viktoria",
+#           "arn:aws:s3:::terraform-state-s3-viktoria/*"
+#         ]
+#       }
+#     ]
+#   })
+# }
 
-resource "aws_iam_role_policy_attachment" "runner_terraform_state" {
-  role       = aws_iam_role.runner_role.name
-  policy_arn = aws_iam_policy.runner_terraform_state.arn
-}
+# resource "aws_iam_role_policy_attachment" "runner_terraform_state" {
+#   role       = aws_iam_role.runner_role.name
+#   policy_arn = aws_iam_policy.runner_terraform_state.arn
+# }
 
 
 # *** da si napishesh nqkyde vryzkata mejdu policy, polict attachment, roles i instance profiles i sled tova da razmestish resursite tuka da sa podredeni

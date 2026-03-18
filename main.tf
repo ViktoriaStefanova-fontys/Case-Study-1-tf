@@ -1,5 +1,6 @@
 # Configure the AWS Provider
 provider "aws" {
+  profile = "fontys"
   region  = var.aws_region
 }
 
@@ -19,6 +20,8 @@ terraform {
     region = "eu-central-1"
     # encrypt = true
     use_lockfile = true
+
+    profile = "fontys"
 
   }
 

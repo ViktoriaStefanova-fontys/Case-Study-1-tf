@@ -2,6 +2,7 @@
 set -euxo pipefail
 
 exec > >(tee /var/log/monitoring-userdata.log | logger -t user-data -s 2>/dev/console) 2>&1
+echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
 
 export DEBIAN_FRONTEND=noninteractive
 

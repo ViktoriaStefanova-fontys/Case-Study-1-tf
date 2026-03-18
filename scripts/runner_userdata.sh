@@ -5,7 +5,7 @@ exec > >(tee /var/log/runner-userdata.log | logger -t user-data -s 2>/dev/consol
 
 REGION="${region}"
 GITHUB_REPO_WEB="${github_repo_web}"
-GITHUB_REPO_INFRA="${github_repo_infra}"
+echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -58,12 +58,12 @@ PAT_WEB=$(aws secretsmanager get-secret-value \
   --query SecretString \
   --output text)
 
-PAT_INFRA=$(aws secretsmanager get-secret-value \
-  --region "$REGION" \
-  --secret-id github_pat_infra \
-  --query SecretString \
-  --output text)
-set -x
+# PAT_INFRA=$(aws secretsmanager get-secret-value \
+#   --region "$REGION" \
+#   --secret-id github_pat_infra \
+#   --query SecretString \
+#   --output text)
+# set -x
 
 # ── 7. Set up runner for web pipeline ────────────────────────────────
 mkdir -p /home/github-runner/runner-web
