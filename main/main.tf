@@ -15,14 +15,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "terraform-state-s3-viktoria"
-    key    = "terraform.tfstate"
-    region = "eu-central-1"
-    # encrypt = true
+    bucket       = "terraform-state-s3-viktoria"
+    key          = "cs1/main.tfstate"
+    region       = "eu-central-1"
+    profile      = "fontys"
     use_lockfile = true
-
-    profile = "fontys"
-
   }
 
 }

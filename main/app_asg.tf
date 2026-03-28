@@ -12,7 +12,7 @@ resource "aws_launch_template" "web_server_lt" {    # web server launch template
   user_data = base64encode(templatefile("${path.module}/scripts/web_server_userdata.sh", { # user data web server
     region     = var.aws_region
     account_id = var.account_id
-    repo       = "caste-study-1/web-server"
+    repo       = "web-server"
     db_host    = aws_db_instance.postgres.address
     db_user    = "postgres"
     db_name    = "notesdb"
