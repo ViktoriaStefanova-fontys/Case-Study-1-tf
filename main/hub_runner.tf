@@ -132,7 +132,7 @@ resource "aws_iam_policy" "runner_asg_refresh" {
     Statement = [{
       Effect   = "Allow"
       Action   = "autoscaling:StartInstanceRefresh"
-      Resource = "arn:aws:autoscaling:eu-central-1:145887419711:autoScalingGroup:*:autoScalingGroupName/web-asg"
+      Resource = "arn:aws:autoscaling:eu-central-1:660637682717:autoScalingGroup:*:autoScalingGroupName/web-asg"
     }]
   })
 }
