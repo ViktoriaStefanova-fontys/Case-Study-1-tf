@@ -1,2 +1,0 @@
-aws sso login --profile fontys
-aws ssm start-session --profile fontys --target i-0b136c4423463327f --document-name AWS-StartPortForwardingSession --parameters portNumber=3000,localPortNumber=3000
