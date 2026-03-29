@@ -10,6 +10,7 @@ override.tf.json
 *_override.tf.json
 .env
 .help/
-grafana_container.
+grafana_container
+login.txt
 terraform.yml
 .terraform.lock.hcl
