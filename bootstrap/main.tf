@@ -131,7 +131,7 @@ data "aws_iam_policy_document" "github_oidc_assume_role" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [
+      values = [
         "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/${var.github_branch}"
       ]
     }
@@ -222,4 +222,91 @@ resource "aws_iam_policy" "github_web_asg_refresh" {
 resource "aws_iam_role_policy_attachment" "github_web_asg_refresh" {
   role       = "github-web-server"
   policy_arn = aws_iam_policy.github_web_asg_refresh.arn
+}
+
+
+
+# ------------------------------------------------------
+# IAM role for Terraform CI (Case-Study-1-tf pipeline)
+# ------------------------------------------------------
+resource "aws_iam_role" "github_tf_ci" {
+  name = "github-tf-ci"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.github_actions.arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+        }
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:ViktoriaStefanova-fontys/Case-Study-1-tf:*"
+        }
+      }
+    }]
+  })
+
+  tags = {
+    Name = "github-tf-ci"
+  }
+}
+
+resource "aws_iam_policy" "github_tf_ci" {
+  name = "github-tf-ci-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "S3StateAccess"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::terraform-state-s3-viktoria",
+          "arn:aws:s3:::terraform-state-s3-viktoria/*"
+        ]
+      },
+      {
+        Sid    = "ReadOnlyForPlan"
+        Effect = "Allow"
+        Action = [
+          "ec2:Describe*",
+          "elasticloadbalancing:Describe*",
+          "autoscaling:Describe*",
+          "rds:Describe*",
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:ListSecrets",
+          "route53:List*",
+          "route53:Get*",
+          "wafv2:List*",
+          "wafv2:Get*",
+          "lambda:List*",
+          "lambda:Get*",
+          "iam:Get*",
+          "iam:List*",
+          "logs:Describe*",
+          "sns:List*",
+          "sns:Get*",
+          "transit-gateway:Describe*",
+          "ec2:DescribeTransitGateways*"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_tf_ci" {
+  role       = aws_iam_role.github_tf_ci.name
+  policy_arn = aws_iam_policy.github_tf_ci.arn
 }
