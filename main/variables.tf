@@ -76,3 +76,16 @@ variable "account_id" {
   type        = string
   description = "Account ID"
 }
+
+############## SOAR ####################
+
+variable "alert_email" {
+  type        = string
+  description = "Email address to receive SOAR alert notifications"
+}
+
+variable "waf_rate_limit" {
+  type        = number
+  description = "Max requests per 5-minute window per IP before WAF blocks and Lambda responds"
+  default     = 300
+}

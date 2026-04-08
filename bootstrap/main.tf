@@ -198,3 +198,28 @@ resource "aws_iam_role_policy_attachment" "github_ecr_push" {
   role       = aws_iam_role.github_web_server.name
   policy_arn = aws_iam_policy.github_ecr_push.arn
 }
+
+
+resource "aws_iam_policy" "github_web_asg_refresh" {
+  name = "github-web-asg-instance-refresh"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "autoscaling:StartInstanceRefresh",
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeInstanceRefreshes"
+        ]
+        Resource = "arn:aws:autoscaling:eu-central-1:660637682717:autoScalingGroup:*:autoScalingGroupName/web-asg"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_web_asg_refresh" {
+  role       = "github-web-server"
+  policy_arn = aws_iam_policy.github_web_asg_refresh.arn
+}
