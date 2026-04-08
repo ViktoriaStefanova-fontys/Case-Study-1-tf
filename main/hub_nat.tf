@@ -7,9 +7,9 @@
 module "fck_nat_1a" {
   source = "git::https://github.com/ViktoriaStefanova-fontys/terraform-aws-fck-nat.git"
 
-  name         = "hub-fck-nat-1a"
-  vpc_id       = aws_vpc.hub_vpc.id
-  subnet_id    = aws_subnet.hub_public_subnet_1a.id
+  name      = "hub-fck-nat-1a"
+  vpc_id    = aws_vpc.hub_vpc.id
+  subnet_id = aws_subnet.hub_public_subnet_1a.id
 
   # update_route_tables = true
   route_tables_ids = {
@@ -24,9 +24,9 @@ module "fck_nat_1a" {
 module "fck_nat_1b" {
   source = "git::https://github.com/ViktoriaStefanova-fontys/terraform-aws-fck-nat.git"
 
-  name         = "hub-fck-nat-1b"
-  vpc_id       = aws_vpc.hub_vpc.id
-  subnet_id    = aws_subnet.hub_public_subnet_1b.id
+  name      = "hub-fck-nat-1b"
+  vpc_id    = aws_vpc.hub_vpc.id
+  subnet_id = aws_subnet.hub_public_subnet_1b.id
 
   # update_route_tables = true
   route_tables_ids = {

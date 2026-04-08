@@ -7,7 +7,7 @@
 # aws_iam_role_policy_attachment
 # aws_iam_instance_profile
 
-data "aws_ami" "ubuntu_web" {   #ubuntu ami
+data "aws_ami" "ubuntu_web" { #ubuntu ami
   most_recent = true
   owners      = ["099720109477"] # Canonical
 
@@ -64,7 +64,7 @@ resource "aws_vpc_security_group_ingress_rule" "web_server_node_exporter_from_mo
 
 resource "aws_vpc_security_group_ingress_rule" "web_server_cadvisor_from_monitoring" {
   security_group_id = aws_security_group.web_server_security_group.id
-  cidr_ipv4         = var.hub_vpc_cidr   # *** smeni na security groupata na monitoring ili na subneta
+  cidr_ipv4         = var.hub_vpc_cidr # *** smeni na security groupata na monitoring ili na subneta
   ip_protocol       = "tcp"
   from_port         = 8080
   to_port           = 8080

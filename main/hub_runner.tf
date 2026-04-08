@@ -24,9 +24,9 @@ resource "aws_instance" "github_runner" {
   iam_instance_profile        = aws_iam_instance_profile.runner_profile.name
   associate_public_ip_address = false
 
-  user_data_base64 = base64encode(templatefile("${path.module}/scripts/runner_userdata.sh", {   # *** opitai se da smenish repotata i regiona s variables
-    region           = "eu-central-1"
-    github_repo_web  = "ViktoriaStefanova-fontys/Case-Study-1-web-pipeline"
+  user_data_base64 = base64encode(templatefile("${path.module}/scripts/runner_userdata.sh", { # *** opitai se da smenish repotata i regiona s variables
+    region          = "eu-central-1"
+    github_repo_web = "ViktoriaStefanova-fontys/Case-Study-1-web-pipeline"
     # github_repo_infra = "ViktoriaStefanova-fontys/Case-Study-1-tf"
   }))
 
@@ -104,7 +104,7 @@ resource "aws_iam_role_policy_attachment" "runner_cloudwatch" {
 
 resource "aws_iam_policy" "runner_read_secrets" {
   name = "runner-read-secrets"
- 
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -117,7 +117,7 @@ resource "aws_iam_policy" "runner_read_secrets" {
     }]
   })
 }
- 
+
 resource "aws_iam_role_policy_attachment" "runner_read_secrets" {
   role       = aws_iam_role.runner_role.name
   policy_arn = aws_iam_policy.runner_read_secrets.arn

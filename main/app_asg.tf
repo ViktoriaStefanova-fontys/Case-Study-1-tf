@@ -1,4 +1,4 @@
-resource "aws_launch_template" "web_server_lt" {    # web server launch template
+resource "aws_launch_template" "web_server_lt" { # web server launch template
   name_prefix   = "web-lt-"
   image_id      = data.aws_ami.ubuntu_web.id
   instance_type = "t3.micro"
@@ -20,7 +20,7 @@ resource "aws_launch_template" "web_server_lt" {    # web server launch template
   }))
 }
 
-resource "aws_autoscaling_group" "web_asg" {   #autoscaling group
+resource "aws_autoscaling_group" "web_asg" { #autoscaling group
   name             = "web-asg"
   desired_capacity = 2
   min_size         = 2
@@ -30,7 +30,7 @@ resource "aws_autoscaling_group" "web_asg" {   #autoscaling group
     aws_subnet.app_private_subnet_1b.id
   ]
 
-  target_group_arns = [aws_lb_target_group.web_tg.arn]  # *** arn: amazon registered name?
+  target_group_arns = [aws_lb_target_group.web_tg.arn] # *** arn: amazon registered name?
 
   launch_template {
     id      = aws_launch_template.web_server_lt.id

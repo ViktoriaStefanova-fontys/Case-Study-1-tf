@@ -1,4 +1,4 @@
-data "aws_ami" "ubuntu_2404" {    # *** eventualno go mahni, shtoto veche go ima v app_web_server: "ubuntu_web" i posle na instance-a go smeni
+data "aws_ami" "ubuntu_2404" { # *** eventualno go mahni, shtoto veche go ima v app_web_server: "ubuntu_web" i posle na instance-a go smeni
   most_recent = true
   owners      = ["099720109477"] # Canonical
 

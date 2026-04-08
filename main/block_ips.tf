@@ -49,14 +49,14 @@ resource "aws_wafv2_web_acl" "web_acl" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = true      # enable cloudwatch to setup the alarm
+      cloudwatch_metrics_enabled = true # enable cloudwatch to setup the alarm
       metric_name                = "BlockListedIPs"
       sampled_requests_enabled   = true
     }
   }
 
   # rule 2: rate-based rule: WAF temporarily blocks IPs exceeding the limit of requests
-  
+
   rule {
     name     = "RateBasedRule"
     priority = 2
