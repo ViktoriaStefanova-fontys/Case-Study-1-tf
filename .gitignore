@@ -12,5 +12,4 @@ override.tf.json
 .help/
 grafana_container
 login.txt
-terraform.yml
 .terraform.lock.hcl
