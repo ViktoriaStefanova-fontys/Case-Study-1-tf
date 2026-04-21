@@ -146,10 +146,10 @@ resource "aws_route_table_association" "hub_private_subnet_rt_assoc_1a" {
   route_table_id = aws_route_table.hub_private_subnet_rt_1a.id
 }
 
-resource "aws_route_table_association" "hub_private_subnet_rt_assoc_1b" {
-  subnet_id      = aws_subnet.hub_private_subnet_1b.id
-  route_table_id = aws_route_table.hub_private_subnet_rt_1b.id
-}
+# resource "aws_route_table_association" "hub_private_subnet_rt_assoc_1b" {
+#   subnet_id      = aws_subnet.hub_private_subnet_1b.id
+#   route_table_id = aws_route_table.hub_private_subnet_rt_1b.id
+# }
 
 
 # App VPC public subnets

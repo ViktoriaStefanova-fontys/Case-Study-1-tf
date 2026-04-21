@@ -53,16 +53,16 @@ resource "aws_subnet" "hub_private_subnet_1a" {
   }
 }
 
-resource "aws_subnet" "hub_private_subnet_1b" {
-  vpc_id                  = aws_vpc.hub_vpc.id
-  cidr_block              = var.hub_private_subnets_cidr[1]
-  availability_zone       = data.aws_availability_zones.available.names[1]
-  map_public_ip_on_launch = false
+# resource "aws_subnet" "hub_private_subnet_1b" {
+#   vpc_id                  = aws_vpc.hub_vpc.id
+#   cidr_block              = var.hub_private_subnets_cidr[1]
+#   availability_zone       = data.aws_availability_zones.available.names[1]
+#   map_public_ip_on_launch = false
 
-  tags = {
-    Name = "Hub private subnet 1b"
-  }
-}
+#   tags = {
+#     Name = "Hub private subnet 1b"
+#   }
+# }
 
 
 
@@ -77,7 +77,10 @@ resource "aws_internet_gateway" "igw_hub" {
 
 # transit gw attatchment 
 resource "aws_ec2_transit_gateway_vpc_attachment" "hub_tgw_attatchment" {
-  subnet_ids         = [aws_subnet.hub_private_subnet_1a.id, aws_subnet.hub_private_subnet_1b.id]
+  subnet_ids = [
+    aws_subnet.hub_private_subnet_1a.id,
+    #aws_subnet.hub_private_subnet_1b.id
+  ]
   transit_gateway_id = aws_ec2_transit_gateway.transit_gateway.id
   vpc_id             = aws_vpc.hub_vpc.id
 
@@ -96,7 +99,7 @@ resource "aws_vpc_endpoint" "hub_ssm" {
   vpc_endpoint_type = "Interface"
   subnet_ids = [
     aws_subnet.hub_private_subnet_1a.id,
-    aws_subnet.hub_private_subnet_1b.id
+    #aws_subnet.hub_private_subnet_1b.id
   ]
   security_group_ids  = [aws_security_group.hub_vpc_endpoints_sg.id]
   private_dns_enabled = true
@@ -112,7 +115,7 @@ resource "aws_vpc_endpoint" "hub_ssmmessages" {
   vpc_endpoint_type = "Interface"
   subnet_ids = [
     aws_subnet.hub_private_subnet_1a.id,
-    aws_subnet.hub_private_subnet_1b.id
+    #aws_subnet.hub_private_subnet_1b.id
   ]
   security_group_ids  = [aws_security_group.hub_vpc_endpoints_sg.id]
   private_dns_enabled = true
@@ -128,7 +131,7 @@ resource "aws_vpc_endpoint" "hub_ec2messages" {
   vpc_endpoint_type = "Interface"
   subnet_ids = [
     aws_subnet.hub_private_subnet_1a.id,
-    aws_subnet.hub_private_subnet_1b.id
+    #aws_subnet.hub_private_subnet_1b.id
   ]
   security_group_ids  = [aws_security_group.hub_vpc_endpoints_sg.id]
   private_dns_enabled = true

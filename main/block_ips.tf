@@ -128,7 +128,7 @@ resource "aws_cloudwatch_metric_alarm" "waf_rate_alarm" {
 }
 
 
-####### EventBridge rule- Watches for the CloudWatch Alarm to change to ALARM state, which wakes Lambda up
+####### EventBridge rule- watches for the cloudWatch alarm to change to ALARM state, which wakes Lambda up
 
 resource "aws_cloudwatch_event_rule" "alarm_to_lambda" {
   name        = "waf-rate-alarm-state-change"
@@ -172,7 +172,7 @@ resource "aws_sns_topic_subscription" "block_ips_email" {
 }
 
 
-# ── IAM role for Lambda ───────────────────────────────────────────────────────
+# IAM role for Lambda
 
 resource "aws_iam_role" "lambda_role" {
   name = "lambda-role"
@@ -208,8 +208,7 @@ resource "aws_iam_policy" "get_ips_lambda_policy" {
         Action = [
           "wafv2:GetRateBasedStatementManagedKeys",
         ]
-        # This action requires * as resource — AWS does not support
-        # resource-level permissions for this specific API call
+
         Resource = "*"
       },
       {
@@ -237,7 +236,7 @@ resource "aws_iam_role_policy_attachment" "lambda_custom" {
 }
 
 
-# ── Lambda function ───────────────────────────────────────────────────────────
+# lambda function 
 
 data "archive_file" "block_ips" {
   type        = "zip"
